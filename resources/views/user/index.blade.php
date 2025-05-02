@@ -104,6 +104,14 @@
                                                     </button>
                                                 </form>
                                             @endif
+                                            <form action="{{ route('user.destroy', $user) }}" method="Post">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="submit"
+                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                    Delete
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

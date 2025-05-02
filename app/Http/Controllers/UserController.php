@@ -54,6 +54,16 @@ class UserController extends Controller
             return redirect()->route('user.index');
         }
     }
+    public function destroy(User $user)
+    {
+        if ($user->id != 1) {
+            $user->delete();
+            return back()->with('success', 'Delete user successfully!');
+        } else {
+            return redirect()->route('user.index')->with('danger', 'Delete user failed!');
+        }
+    }
+
 
 }
 

@@ -13,7 +13,7 @@ class TodoController extends Controller
         $todos = Todo::where('user_id', Auth::id())->orderBy('created_at', 'desc')->get();
         // dd($datas);
         $todosCompleted = Todo::where('user_id', auth()->user()->id)
-    ->where('is_complete', true)
+    ->where('is_done', true)
     ->count();
 
 return view('todo.index', compact('todos', 'todosCompleted'));
@@ -102,9 +102,9 @@ return view('todo.index', compact('todos', 'todosCompleted'));
 
 public function destroyCompleted()
 {
-    // get all todos for current user where is_completed is true
+    // get all todos for current user where is_doned is true
     $todosCompleted = Todo::where('user_id', auth()->user()->id)
-        ->where('is_complete', true)
+        ->where('is_done', true)
         ->get();
 
     foreach ($todosCompleted as $todo) {
