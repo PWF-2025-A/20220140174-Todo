@@ -21,10 +21,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/todo', [TodoController::class, 'index'])->name('todo.index');
     Route::get('/todo/create', [TodoController::class, 'create'])->name('todo.create');
     Route::get('/todo/edit', [TodoController::class, 'edit'])->name('todo.edit');
+    Route::post('/todo/{todo}', [TodoController::class, 'update'])->name('todo.update');
+
+    Route::resource('todo', TodoController::class)->except(['show']);
+    Route::patch('/todo/{todo}/complete', [TodoController::class, 'complete'])->name('todo.complete');
+    Route::patch('/todo/{todo}/uncomplete', [TodoController::class, 'uncomplete'])->name('todo.uncomplete');
+
 
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
-});
+    Route::patch('/user/{user}/makeadmin', [UserController::class, 'makeadmin'])->name('user.makeadmin');
+    Route::patch('/user/{user}/removeadmin', [UserController::class, 'removeadmin'])->name('user.removeadmin');
 
-Route::resource('todo', TodoController::class)->except(['show']);
+    Route::delete('/todo/{todo}', [TodoController::class, 'destroy'])->name('todo.destroy');
+    Route::delete('/todo', [TodoController::class, 'destroyCompleted'])->name('todo.deleteallcompleted');
+
+});
 
 require __DIR__.'/auth.php';
