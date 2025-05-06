@@ -20,7 +20,7 @@
                     <form method="GET" action="{{ route('user.index') }}" class="flex items-center gap-4">
                         <div>
                             <x-text-input id="search" name="search" type="text" class="w-50"
-                                placeholder="Search by name or email" value="{{ request('search') }}" autofocus />
+                                          placeholder="Search by name or email" value="{{ request('search') }}" autofocus />
                         </div>
                         <div>
                             <x-primary-button type="submit">
@@ -84,22 +84,24 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         {{-- Admin toggle button --}}
-                                        <div class="flex space-x-3">
+                                        <div class="flex space-x-3" id="user-actions-{{ $user->id }}">
                                             @if ($user->is_admin)
-                                                <form action="{{ route('user.removeadmin', $user) }}" method="Post">
+                                                <form action="{{ route('user.removeadmin', $user) }}" method="Post"
+                                                      data-user-id="{{ $user->id }}" data-action="removeadmin">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit"
-                                                        class="text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                                            class="admin-toggle-button text-blue-600 dark:text-blue-400 whitespace-nowrap">
                                                         Remove Admin
                                                     </button>
                                                 </form>
                                             @else
-                                                <form action="{{ route('user.makeadmin', $user) }}" method="Post">
+                                                <form action="{{ route('user.makeadmin', $user) }}" method="Post"
+                                                      data-user-id="{{ $user->id }}" data-action="makeadmin">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit"
-                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                            class="admin-toggle-button text-red-600 dark:text-red-400 whitespace-nowrap">
                                                         Make Admin
                                                     </button>
                                                 </form>
@@ -108,7 +110,7 @@
                                                 @csrf
                                                 @method('delete')
                                                 <button type="submit"
-                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
                                                     Delete
                                                 </button>
                                             </form>
@@ -134,4 +136,163 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const adminToggleButtons = document.querySelectorAll('.admin-toggle-button');
+
+                adminToggleButtons.forEach(button => {
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const form = this.closest('form');
+                        const userId = form.dataset.userId;
+                        const action = form.dataset.action;
+                        const formData = new FormData(form);
+                        const url = form.getAttribute('action');
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const actionsDiv = document.getElementById(`user-actions-${userId}`);
+                                actionsDiv.innerHTML = ''; // Clear existing buttons
+
+                                if (action === 'makeadmin') {
+                                    actionsDiv.innerHTML += `
+                                        <form action="{{ route('user.removeadmin', '') }}/${userId}" method="Post"
+                                              data-user-id="${userId}" data-action="removeadmin">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    class="admin-toggle-button text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                                Remove Admin
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
+                                            @csrf
+                                            @method('delete')
+                                            <button type="submit"
+                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    `;
+                                } else if (action === 'removeadmin') {
+                                    actionsDiv.innerHTML += `
+                                        <form action="{{ route('user.makeadmin', '') }}/${userId}" method="Post"
+                                              data-user-id="${userId}" data-action="makeadmin">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit"
+                                                    class="admin-toggle-button text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                Make Admin
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
+                                            @csrf
+                                            @method('delete')
+                                            <button type="submit"
+                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    `;
+                                }
+                                // Re-attach event listeners to the newly created buttons
+                                attachEventListeners();
+
+                                // Optionally display the success message using Alpine.js
+                                window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.success, type: 'success' }}));
+                            } else if (data.error) {
+                                // Optionally display the error message
+                                window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.error, type: 'danger' }}));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('There was an error!', error);
+                        });
+                    });
+                });
+
+                function attachEventListeners() {
+                    const newAdminToggleButtons = document.querySelectorAll('.admin-toggle-button');
+                    newAdminToggleButtons.forEach(button => {
+                        button.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const form = this.closest('form');
+                            const userId = form.dataset.userId;
+                            const action = form.dataset.action;
+                            const formData = new FormData(form);
+                            const url = form.getAttribute('action');
+
+                            fetch(url, {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const actionsDiv = document.getElementById(`user-actions-${userId}`);
+                                    actionsDiv.innerHTML = ''; // Clear existing buttons
+
+                                    if (action === 'makeadmin') {
+                                        actionsDiv.innerHTML += `
+                                            <form action="{{ route('user.removeadmin', '') }}/${userId}" method="Post"
+                                                  data-user-id="${userId}" data-action="removeadmin">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        class="admin-toggle-button text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                                    Remove Admin
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="submit"
+                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        `;
+                                    } else if (action === 'removeadmin') {
+                                        actionsDiv.innerHTML += `
+                                            <form action="{{ route('user.makeadmin', '') }}/${userId}" method="Post"
+                                                  data-user-id="${userId}" data-action="makeadmin">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        class="admin-toggle-button text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                    Make Admin
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="submit"
+                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        `;
+                                    }
+                                    attachEventListeners();
+                                    window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.success, type: 'success' }}));
+                                } else if (data.error) {
+                                    window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.error, type: 'danger' }}));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('There was an error!', error);
+                            });
+                        });
+                    });
+                }
+            });
+        </script>
+    @endpush
 </x-app-layout>
