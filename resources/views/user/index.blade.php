@@ -85,7 +85,7 @@
                                     <td class="px-6 py-4">
                                         {{-- Admin toggle button --}}
                                         <div class="flex space-x-3" id="user-actions-{{ $user->id }}">
-                                            @if ($user->is_admin)
+                                            @if ($user->is_Admin)
                                                 <form action="{{ route('user.removeadmin', $user) }}" method="Post"
                                                       data-user-id="{{ $user->id }}" data-action="removeadmin">
                                                     @csrf
@@ -140,6 +140,10 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                attachEventListeners();
+            });
+
+            function attachEventListeners() {
                 const adminToggleButtons = document.querySelectorAll('.admin-toggle-button');
 
                 adminToggleButtons.forEach(button => {
@@ -149,22 +153,27 @@
                         const userId = form.dataset.userId;
                         const action = form.dataset.action;
                         const formData = new FormData(form);
-                        const url = form.getAttribute('action');
 
-                        fetch(url, {
+                        fetch(form.action, {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 const actionsDiv = document.getElementById(`user-actions-${userId}`);
-                                actionsDiv.innerHTML = ''; // Clear existing buttons
+                                actionsDiv.innerHTML = '';
 
+                                // Update the button based on the current action
                                 if (action === 'makeadmin') {
-                                    actionsDiv.innerHTML += `
+                                    // Show Remove Admin button
+                                    actionsDiv.innerHTML = `
                                         <form action="{{ route('user.removeadmin', '') }}/${userId}" method="Post"
-                                              data-user-id="${userId}" data-action="removeadmin">
+                                              data-user-id="${userId}" data-action="removeadmin"
+                                              class="flex space-x-3">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit"
@@ -172,19 +181,13 @@
                                                 Remove Admin
                                             </button>
                                         </form>
-                                        <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
-                                            @csrf
-                                            @method('delete')
-                                            <button type="submit"
-                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
-                                                Delete
-                                            </button>
-                                        </form>
                                     `;
-                                } else if (action === 'removeadmin') {
-                                    actionsDiv.innerHTML += `
+                                } else {
+                                    // Show Make Admin button
+                                    actionsDiv.innerHTML = `
                                         <form action="{{ route('user.makeadmin', '') }}/${userId}" method="Post"
-                                              data-user-id="${userId}" data-action="makeadmin">
+                                              data-user-id="${userId}" data-action="makeadmin"
+                                              class="flex space-x-3">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit"
@@ -192,107 +195,37 @@
                                                 Make Admin
                                             </button>
                                         </form>
-                                        <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
-                                            @csrf
-                                            @method('delete')
-                                            <button type="submit"
-                                                    class="text-red-600 dark:text-red-400 whitespace-nowrap">
-                                                Delete
-                                            </button>
-                                        </form>
                                     `;
                                 }
-                                // Re-attach event listeners to the newly created buttons
+
+                                // Add delete button
+                                actionsDiv.innerHTML += `
+                                    <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="text-red-600 dark:text-red-400 whitespace-nowrap">
+                                            Delete
+                                        </button>
+                                    </form>
+                                `;
+
+                                // Re-attach event listeners
                                 attachEventListeners();
 
-                                // Optionally display the success message using Alpine.js
-                                window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.success, type: 'success' }}));
-                            } else if (data.error) {
-                                // Optionally display the error message
-                                window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.error, type: 'danger' }}));
+                                // Show success message
+                                if (data.message) {
+                                    // You can implement a toast notification here
+                                    console.log(data.message);
+                                }
                             }
                         })
                         .catch(error => {
-                            console.error('There was an error!', error);
+                            console.error('Error:', error);
                         });
                     });
                 });
-
-                function attachEventListeners() {
-                    const newAdminToggleButtons = document.querySelectorAll('.admin-toggle-button');
-                    newAdminToggleButtons.forEach(button => {
-                        button.addEventListener('click', function(event) {
-                            event.preventDefault();
-                            const form = this.closest('form');
-                            const userId = form.dataset.userId;
-                            const action = form.dataset.action;
-                            const formData = new FormData(form);
-                            const url = form.getAttribute('action');
-
-                            fetch(url, {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const actionsDiv = document.getElementById(`user-actions-${userId}`);
-                                    actionsDiv.innerHTML = ''; // Clear existing buttons
-
-                                    if (action === 'makeadmin') {
-                                        actionsDiv.innerHTML += `
-                                            <form action="{{ route('user.removeadmin', '') }}/${userId}" method="Post"
-                                                  data-user-id="${userId}" data-action="removeadmin">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit"
-                                                        class="admin-toggle-button text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                                                    Remove Admin
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
-                                                @csrf
-                                                @method('delete')
-                                                <button type="submit"
-                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        `;
-                                    } else if (action === 'removeadmin') {
-                                        actionsDiv.innerHTML += `
-                                            <form action="{{ route('user.makeadmin', '') }}/${userId}" method="Post"
-                                                  data-user-id="${userId}" data-action="makeadmin">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit"
-                                                        class="admin-toggle-button text-red-600 dark:text-red-400 whitespace-nowrap">
-                                                    Make Admin
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('user.destroy', '') }}/${userId}" method="Post">
-                                                @csrf
-                                                @method('delete')
-                                                <button type="submit"
-                                                        class="text-red-600 dark:text-red-400 whitespace-nowrap">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        `;
-                                    }
-                                    attachEventListeners();
-                                    window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.success, type: 'success' }}));
-                                } else if (data.error) {
-                                    window.dispatchEvent(new CustomEvent('notify', { detail: { message: data.error, type: 'danger' }}));
-                                }
-                            })
-                            .catch(error => {
-                                console.error('There was an error!', error);
-                            });
-                        });
-                    });
-                }
-            });
+            }
         </script>
     @endpush
 </x-app-layout>

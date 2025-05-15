@@ -10,7 +10,7 @@
             {{-- Intro Box --}}
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("Index Todo Page") }}
+                    {{ __("Todo") }}
                 </div>
             </div>
 
@@ -47,6 +47,7 @@
                     <thead class="text-sm text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-6 py-3">Title</th>
+                            <th scope="col" class="px-6 py-3">Category</th>
                             <th scope="col" class="px-6 py-3">Status</th>
                             <th scope="col" class="px-6 py-3">Action</th>
                         </tr>
@@ -59,6 +60,11 @@
                                     <a href="{{ route('todo.edit', $data) }}" class="hover:underline text-xs">
                                         {{ $data->title }}
                                     </a>
+                                </td>
+
+                                {{-- Category --}}
+                                <td class="px-6 py-4 font-medium text-white dark:text-gray-900">
+                                    {{ $data->category ? $data->category->title : 'No Category' }}
                                 </td>
 
                                 {{-- Status --}}
@@ -95,13 +101,14 @@
                                             </button>
                                         </form>
                                     @endif
-                                    <Form action="{{ route('todo.destroy', $data) }}" method="POST">
+                                    <form action="{{ route('todo.destroy', $data) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
                                             class="text-red-600 dark:text-red-400">
                                             Delete
                                         </button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty
@@ -116,18 +123,15 @@
             </div>
             @if ($todosCompleted > 1)
             <div class="p-6 text-xl text-gray-900 dark:text-gray-100">
-    <form action="{{ route('todo.deleteallcompleted') }}" method="Post">
-        @csrf
-        @method('delete')
-
-        <x-primary-button>
-            Delete All Completed Task
-        </x-primary-button>
-    </form>
-</div>
-
-@endif
-
+                <form action="{{ route('todo.deleteallcompleted') }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <x-primary-button>
+                        Delete All Completed Task
+                    </x-primary-button>
+                </form>
+            </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

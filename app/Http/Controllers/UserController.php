@@ -36,8 +36,15 @@ class UserController extends Controller
     public function makeadmin(User $user)
     {
         $user->timestamps = false;
-        $user->is_admin = true;
+        $user->is_Admin = true;
         $user->save();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Make admin successfully!'
+            ]);
+        }
 
         return back()->with('success', 'Make admin successfully!');
     }
@@ -46,11 +53,25 @@ class UserController extends Controller
     {
         if ($user->id != 1) {
             $user->timestamps = false;
-            $user->is_admin = false;
+            $user->is_Admin = false;
             $user->save();
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Remove admin successfully!'
+                ]);
+            }
 
             return back()->with('success', 'Remove admin successfully!');
         } else {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot remove admin from main administrator!'
+                ]);
+            }
+
             return redirect()->route('user.index');
         }
     }
