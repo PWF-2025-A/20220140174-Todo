@@ -55,10 +55,10 @@
                     <tbody>
                         @forelse ($categories as $category)
                             <tr class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-                                <td class="px-6 py-4 font-medium text-white dark:text-gray-900">
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                     {{ $category->title }}
                                 </td>
-                                <td class="px-6 py-4 text-white dark:text-gray-900">
+                                <td class="px-6 py-4 text-gray-900 dark:text-white">
                                     {{ $category->todos->count() }}
                                 </td>
                                 <td class="px-6 py-4">

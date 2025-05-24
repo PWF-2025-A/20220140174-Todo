@@ -10,13 +10,18 @@ use Illuminate\Support\Facades\Auth;
 class TodoController extends Controller
 {
     public function index()
-    {        
-        $todos = Todo::where('user_id', Auth::id())->orderBy('created_at', 'desc')->get();
-        $todosCompleted = Todo::where('user_id', Auth::id())
+    {
+        $todos = Todo::with('category')
+            ->where('user_id', Auth::id())
+            ->orderBy('is_done', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $todoCompleted = Todo::where('user_id', Auth::id())
             ->where('is_done', true)
             ->count();
 
-        return view('todo.index', compact('todos', 'todosCompleted'));
+        return view('todo.index', compact('todos', 'todoCompleted'));
     }
 
     public function create()

@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useTailwind();
         Gate::define('admin', function ($user) {
-            return $user->is_Admin == true;
+            return $user->is_admin == true;
         });
     }
 }

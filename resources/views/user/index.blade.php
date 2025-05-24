@@ -85,7 +85,7 @@
                                     <td class="px-6 py-4">
                                         {{-- Admin toggle button --}}
                                         <div class="flex space-x-3" id="user-actions-{{ $user->id }}">
-                                            @if ($user->is_Admin)
+                                            @if ($user->is_admin)
                                                 <form action="{{ route('user.removeadmin', $user) }}" method="Post"
                                                       data-user-id="{{ $user->id }}" data-action="removeadmin">
                                                     @csrf

@@ -90,9 +90,11 @@
                 {{ __('Category') }}
             </x-responsive-nav-link>
 
+            @can('admin')
             <x-responsive-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
                 {{ __('User') }}
             </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->
